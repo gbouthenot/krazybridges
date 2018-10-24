@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Online Bridges by KrazyDad</title>
+<meta name="keywords" content="bridges,puzzles,puzzle,interactive puzzles,online puzzles,interactive bridges,online bridges,bridge puzzles">
+<meta name="description" content="Free online bridges puzzles">
+
+<link rel=stylesheet type="text/css" href="css/css.css">
+<script type="text/javascript" src="js/jboot.min.js"></script>
+
+<style>
+  #outercontainer { margin:0; padding:0; overflow-x:hidden;}
+  #canvascontainer { position:relative; width:406px; min-height:406px; margin:0 auto; margin-bottom:30px; padding:0;}
+  #logocontainer { position:absolute; top:157px; left:1; width:406px; height:90px; opacity:0.5; text-align:center;  }
+  #titlecontainer { position:absolute; top:404px; left:0px; width:300px; height:22px; opacity:0.8; font-size:12px;  text-align:left; }
+  #copycontainer { position:absolute; top:404px; left:243px; width:200px; height:22px; opacity:0.4; font-size:12px;  }
+  #spinnercontainer { position:absolute; top:100px; left:0px; width:406px; text-align:center; }
+  #adcontainer,#adcontainer i { max-width: 700px; font-size: 12px; margin: 6px auto 18px auto; opacity:0; transition: all 0.5s ease-in-out;}
+  #adcontainer:hover { opacity:1; transition: all 0.5s ease-in-out;}
+  .web-underscore { text-decoration: underline; }
+
+.spr_question { width:32px; height:32px; background:url('img/sprites.png') -0 -0;    }
+.spr_left     { width:32px; height:32px; background:url('img/sprites.png') -0 -32px  }
+.spr_right    { width:32px; height:32px; background:url('img/sprites.png') -0 -64px  }
+.spr_book     { width:32px; height:32px; background:url('img/sprites.png') -0 -96px  }
+.spr_undo     { width:32px; height:32px; background:url('img/sprites.png') -0 -128px }
+.spr_redo     { width:32px; height:32px; background:url('img/sprites.png') -0 -160px }
+.spr_settings { width:32px; height:32px; background:url('img/sprites.png') -0 -192px }
+
+</style>
+<script>
+  var gPuzzleWidth = 400;
+  var gPuzzleHeight = gPuzzleWidth;
+  initStatus = "";
+  var prevPuz = ''; // '?kind=9x9&volumeNumber=1&bookNumber=100&puzzleNumber=32';
+  var nextPuz = ''; // '?kind=9x9&volumeNumber=1&bookNumber=1&puzzleNumber=2';
+  var maxVolume = 5;
+  var currentPuzzleType = 'Bridge';
+  var useSlitherlinkTools = 0;
+  var puzzle_data = {"passes":12,"puzz":"a2d4a33a5a2b1f2b4b3c1b2b3a3b3b1c2b3b2f1b2a3a22a3d2a","height":9,"solved":"2020121121001120110121010011111112","ptitle":"KD_Bridge_9x9_V1-B2-P28","width":9}
+  var pMatch = puzzle_data.ptitle.match(/KD_Bridge_(.*)_V(\d*)-B(\d*)-P(\d*)/);
+  var pRec = {
+    "puzzle_data":puzzle_data,
+    "puzzle_id": pMatch[0],
+    "success": true,
+    "cookie_data": ["1", "2"],
+    "comments": "",
+    "creation_date": ""
+  };
+  var [gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber] = [puzzle_data.width, puzzle_data.height, pMatch[1], pMatch[2], pMatch[3], pMatch[4]]
+
+</script>
+</head>
+<body>
+<div class="container-fluid" id="outercontainer">
+  <div class="col-sm-12 text-center">
+    <div id="pagetitle">Bridges  by <a href="/tablet/"><span class="brand">krazydad</span></a></div>
+
+    <div class="unselectable" id="canvascontainer">
+      <canvas id="puzzlecontainer" class="unselectable"></canvas>
+      <!--<div class="unselectable" id="logocontainer"><img src="../img/krazydad_logo.png" alt="krazydad logo"/></div>-->
+      <div class="unselectable" id="titlecontainer">Bridge, 9 x 9, 1-1-1</div>
+      <div class="unselectable" id="copycontainer">&copy;2014 krazydad.com</div>
+      <div class="unselectable" id="spinnercontainer"><img src="../img/ajax-loader.gif" alt="Loading"/></div>
+      <div class="unselectable" id="ballooncontainer"></div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="btn-group dropup puzzlebuttons" id="puzzlebuttons">
+          <button type="button" class="btn dropdown-toggle nav-btn" data-toggle="dropdown" role="button" aria-expanded="false"><div class="spr_question" id="tool_help" title="Help &amp; Instructions Menu" alt="Help"></div></button>
+          <ul class="dropdown-menu" role="menu" >
+            <li><a href="javascript:checkSolutionButton();">Check <span class="web-underscore">A</span>nswers</a></li>
+            <li><a href="javascript:reinitNewPuzzle();">Clear Puzzle</a></li>
+            <li><a href="javascript:provideInstructions();"><span class="web-underscore">I</span>nstructions</a></li>
+            <!--
+            <li><a href="javascript:autoSetMarks();">Setup Marks</a></li>
+            <li><a href="javascript:clearMarks();">Clear Marks</a></li>
+            -->
+            <li><a href="javascript:exportImage();">Printable Image</a></li>
+          </ul>
+          <button type="button" class="btn nav-btn" id="tool_left" title="Go to Previous Puzzle"><div class="spr_left" alt="Left"></div></button>
+          <button type="button" class="btn nav-btn" id="tool_right" title="Go to Next Puzzle"><div class="spr_right" alt="Right"></div></button>
+          <button type="button" class="btn nav-btn" id="tool_search" title="Search for a new puzzle"><div class="spr_book" alt="Search"></div></button>
+          <button type="button" class="btn nav-btn disabled" id="tool_undo" title="Undo move"><div class="spr_undo" alt="Undo"></div></button>
+          <button type="button" class="btn nav-btn disabled" id="tool_redo" title="Redo move"><div class="spr_redo" alt="Redo"></div></button>
+          <button type="button" class="btn nav-btn last-btn" id="tool_settings" title="Settings"><div class="spr_settings" alt="Settings"></div></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="controlpanel">
+      <div id='pstatus'></div> <!-- end pstatus -->
+      <p>
+    </div> <!-- end controlpanel -->
+  </div> <!-- end center container -->
+</div> <!-- end outer container -->
+
+<div class="modal fade" id="mySettings">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Bridges Settings</h4>
+      </div>
+      <div class="modal-body">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" checked data-toggle="toggle" class="prefs-toggle" data-prefs="autoCheckAnswers" id="prefs-autoCheckAnswers">
+            Auto-check answers
+          </label>
+        </div>      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="myNavigation">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Find a puzzle</h4>
+      </div>
+      <div class="modal-body">
+
+        <form class="form-horizontal" role="form" id="myNavigationForm">
+          <div class="form-group">
+            <label for="kind" class="col-sm-4 control-label">Variety</label>
+            <div class="col-sm-8">
+              <select class="form-control" name="kind" id="kind">
+                <option value="9x9" selected>9 x 9</option>
+                <option value="12x14">12 x 14</option>
+                <option value="22x14">22 x 14</option>
+                <option value="20x25">20 x 25</option>
+                <option value="25x25">25 x 25</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="volumeNumber" class="col-sm-4 control-label">Volume#</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="volumeNumber" name="volumeNumber" placeholder="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="bookNumber" class="col-sm-4 control-label">Book#</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="bookNumber" name="bookNumber" placeholder="1" value="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="puzzleNumber" class="col-sm-4 control-label">Puzzle#</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="puzzleNumber" name="puzzleNumber" placeholder="1">
+            </div>
+          </div>
+        </form>
+      </div> <!-- modal-body -->
+      <div class="modal-footer">
+        <button class="btn" id="search-variety">Puzzle Menu</button>
+        <button type="submit" class="btn btn-primary btn-default" id="search-submit">Search</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script>
+if (!window.console) window.console = {}; // IE fix
+if (!window.console.log) window.console.log = function () { };
+var isTouchscreen = false;
+var isAndroid = false;
+var agent = navigator.userAgent.toLowerCase();
+if(agent.indexOf('iphone') >= 0 ||
+   agent.indexOf('ipad') >= 0 ||
+   agent.indexOf('android') >= 0 ||
+   agent.indexOf('touch') >= 0) {
+  isTouchscreen = true;
+}
+if (agent.indexOf('android') >= 0) {
+  isAndroid = true;
+}
+</script>
+
+<script type="text/javascript" src="js/kdbridgelib-slate.js"></script>
+<script type="text/javascript" src="js/puzUtils.js"></script>
+<script type="text/javascript" src="js/plainUtils.js"></script>
+
+<style>
+html, body { background-color:#000; }
+body,div,p,blockquote,ol,ul,dl,li,dt,dd,td,th,h1,h2,h3,h4,b,i,br { color:#aaa; }
+div#outercontainer { background-image:none; }
+.brand { color:#666; }
+.nav-btn, .tool-btn { background-color:#444; }
+.nav-btn.disabled { opacity:.65; }
+</style>
+
+</body>
+</html>
