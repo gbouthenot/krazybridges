@@ -1,0 +1,16 @@
+{
+  "name": "krazybridges",
+  "version": "1.0.0",
+  "description": "",
+  "main": "leech.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines" : { "node" : ">=8" },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^5.0.1",
+    "node-fetch": "^2.2.0"
+  }
+}
