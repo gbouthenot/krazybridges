@@ -40,33 +40,24 @@
 <script>
   var gPuzzleWidth = 400;
   var gPuzzleHeight = gPuzzleWidth;
-  var gGridWidth = 9;
-  var gGridHeight = 9;
   initStatus = "";
-  var pkind = '9x9';
-  var volumeNumber = 1;
-  var bookNumber = 1;
-  var puzzleNumber = 1;
-  var prevPuz = '?kind=9x9&volumeNumber=1&bookNumber=100&puzzleNumber=32';
-  var nextPuz = '?kind=9x9&volumeNumber=1&bookNumber=1&puzzleNumber=2';
+  var prevPuz = ''; // '?kind=9x9&volumeNumber=1&bookNumber=100&puzzleNumber=32';
+  var nextPuz = ''; // '?kind=9x9&volumeNumber=1&bookNumber=1&puzzleNumber=2';
   var maxVolume = 5;
   var currentPuzzleType = 'Bridge';
   var useSlitherlinkTools = 0;
+  var puzzle_data = {"passes":12,"puzz":"2b3c2g1a23a2a4b2d1a3b3i4b2a2d1b3a2a33a1g2c3b2","height":9,"solved":"1120010111102101121120010111121","ptitle":"KD_Bridge_9x9_V1-B2-P27","width":9}
+  var pMatch = puzzle_data.ptitle.match(/KD_Bridge_(.*)_V(\d*)-B(\d*)-P(\d*)/);
   var pRec = {
-    "puzzle_data": {
-      "passes": 12,
-      "puzz": "a3b3a3a22i5a2a1b24a2a3b1d1a3d2b3a1a35b2a2a3i23a3a4b2a",
-      "height": 9,
-      "solved": "12111112210001102200011011020221011211",
-      "ptitle": "KD_Bridge_9x9_V1-B1-P1",
-      "width": 9
-    },
-    "puzzle_id": "KD_Bridge_9x9_V1-B1-P1",
+    "puzzle_data":puzzle_data,
+    "puzzle_id": pMatch[0],
     "success": true,
-    "cookie_data": ["We have all a better guide in ourselves, if we would attend to it, than any other person can be.", "                                        -- Jane Austen"],
+    "cookie_data": ["1", "2"],
     "comments": "",
-    "creation_date": "2014-12-11 17:03:52"
+    "creation_date": ""
   };
+  var [gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber] = [puzzle_data.width, puzzle_data.height, pMatch[1], pMatch[2], pMatch[3], pMatch[4]]
+
 </script>
 </head>
 <body>

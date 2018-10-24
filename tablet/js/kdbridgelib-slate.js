@@ -34,6 +34,7 @@ function getMaxPuzzlesPerBook(kind) {
 
 function initNewPuzzle()
 {
+  document.querySelector('#titlecontainer').textContent = `Bridge, ${pMatch[1]}, ${pMatch[2]}-${pMatch[3]}-${pMatch[4]}`
   setStatus("");
   if (initStatus != '') {
     puzzleMessage([initStatus]);
