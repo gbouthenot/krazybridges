@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
+/* eslint no-multi-spaces: ["error", { ignoreEOLComments: true }] */
 class BridgeLeecher {
-
   constructor () {
     this.varieties = [
-      [ '9x9', 5, 100, 32 ],   // 16000
-      [ '12x14', 5, 100, 16 ], //  8000 24000
-      [ '22x14', 5, 100, 16 ], //  8000 32000
-      [ '20x25', 5, 100, 8 ],  //  4000 36000
-      [ '25x25', 5, 100, 8 ]   //  4000
+      [ '9x9', 5, 100, 32 ],   //     0 -> 16000
+      [ '12x14', 5, 100, 16 ], // 16000 -> 24000
+      [ '22x14', 5, 100, 16 ], // 24000 -> 32000
+      [ '20x25', 5, 100, 8 ],  // 32000 -> 36000
+      [ '25x25', 5, 100, 8 ]   // 36000 -> 40000
     ]
 
     this.leechState = {
@@ -16,7 +16,7 @@ class BridgeLeecher {
       volume: 1,
       book: 1,
       number: 0,
-      nbdone: 0
+      nbdone: undefined
     }
 
     const SQLITE = require('better-sqlite3')
@@ -32,8 +32,12 @@ CREATE TABLE IF NOT EXISTS bridges (
 )`
     this.db.exec(schema)
 
-    this.dbGetOne = this.db.prepare('SELECT jsondata FROM bridges WHERE kind=? AND vol=? AND book=? AND number=?')
-    this.dbPut = this.db.prepare('INSERT INTO bridges VALUES (?, ?, ?, ?, ?)')
+    this.sqlGetOne = this.db.prepare('SELECT jsondata FROM bridges WHERE kind=? AND vol=? AND book=? AND number=?')
+    this.sqlInsert = this.db.prepare('INSERT INTO bridges VALUES (?, ?, ?, ?, ?)')
+    this.sqlCount = this.db.prepare('SELECT count(*) AS count FROM bridges')
+
+    this.leechState.nbdone = this.puzzleCount()
+    this.logProgress()
   }
 
   /**
@@ -57,13 +61,17 @@ CREATE TABLE IF NOT EXISTS bridges (
     }
 
     ls.nbdone++
-    if (ls.nbdone % 100 === 0) {
-      console.log(`kind ${this.varieties[ls.variety][0]}, vol ${ls.volume}, book ${ls.book}, puzzle ${ls.number}, ${ls.nbdone / 400.0}%`)
+    if (ls.nbdone % 20 === 0) {
+      this.logProgress()
     }
 
     return true
   }
 
+  logProgress () {
+    const ls = this.leechState
+    console.log(`kind ${this.varieties[ls.variety][0]}, vol ${ls.volume}, book ${ls.book}, puzzle ${ls.number}, ${ls.nbdone / 400.0}%`)
+  }
   /*
    * check if puzzle is already in database
    * @return undefined if row does not exist
@@ -71,13 +79,21 @@ CREATE TABLE IF NOT EXISTS bridges (
   puzzleExists () {
     const ls = this.leechState
     const [kind, vol, book, pn] = [this.varieties[ls.variety][0], ls.volume, ls.book, ls.number]
-    return this.dbGetOne.get(kind, vol, book, pn)
+    return this.sqlGetOne.get(kind, vol, book, pn)
+  }
+
+  /**
+    * @return int number of puzzles in db
+    */
+  puzzleCount () {
+    const ret = this.sqlCount.get()
+    return parseInt(ret['count'])
   }
 
   puzzleSave (data) {
     const ls = this.leechState
     const [kind, vol, book, pn] = [this.varieties[ls.variety][0], ls.volume, ls.book, ls.number]
-    const changes = this.dbPut.run(kind, vol, book, pn, JSON.stringify(data))
+    const changes = this.sqlInsert.run(kind, vol, book, pn, JSON.stringify(data))
     if (changes.changes !== 1) {
       throw new Error('db save error')
     }
@@ -123,7 +139,7 @@ CREATE TABLE IF NOT EXISTS bridges (
     // const url = 'http://127.0.0.1/gbo/krazybridges/sample.html'
     const fetch = require('node-fetch')
 
-    const opts = { timeout: 5000, headers: {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
+    const opts = { timeout: 5000, headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
     console.log(url)
     await fetch(url, opts).then(res => res.text()).then(body => {
       let match = body.match(/^ {2}var pRec = (\{.*\});/m)
