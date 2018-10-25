@@ -1,3 +1,7 @@
+/* eslint-env browser, jquery */
+/* eslint-disable camelcase, no-global-assign */
+/* global pMatch, maxVolume, pRec, gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber */
+
 var puzzleType = 'Bridge';
 
 var myPuzzle, puzzleID;
@@ -24,7 +28,7 @@ var myIslands = [];
 var myEdges = [];
 
 function getMaxPuzzlesPerBook(kind) {
-  var perBook = {'9x9':32,'22x14':16,'20x25':8,'25x25':8};
+  var perBook = {'9x9':32,'12x14':16,'22x14':16,'20x25':8,'25x25':8};
   if (kind in perBook) {
     return perBook[kind];
   } else {
@@ -40,12 +44,77 @@ function initNewPuzzle()
     puzzleMessage([initStatus]);
   }
 
-	startTime = (new Date()).getTime();
+  myPuzzle = pRec['puzzle_data']['puzz'];
+  mySolution = pRec['puzzle_data']['solved']; //list of (0,1, or 2) for each known edge...
+  puzzWidth = parseInt(pRec['puzzle_data']['width']);
+  puzzHeight = parseInt(pRec['puzzle_data']['height']);
+  puzzMaxCells = puzzWidth * puzzHeight;
+  puzzleID = pRec['puzzle_id'];
+
+  gPuzzMarginH = 10;
+  gPuzzMarginV = 10;
+  gCellWidth = (gPuzzleWidth-gPuzzMarginH*2) / puzzWidth;
+  gCellHeight = (gPuzzleWidth-gPuzzMarginV*2) / puzzWidth;
+  gFontHeight = Math.round((20/50)*gCellHeight);
+
+  myIslands = [];
+  var x = 0;
+  var y = 0;
+  for (var i = 0; i < myPuzzle.length; ++i) {
+    var ch = myPuzzle.charCodeAt(i);
+    var repCnt = 0;
+    if (ch >= 48 && ch <= 57) {
+      myIslands.push({'x':x,'y':y,'clue':ch-48,'idx':myIslands.length,'outbridges':[],'islandClass':0});
+      repCnt = 1;
+    } else if (ch >= 97) {
+      repCnt = (ch - 96);
+    }
+    while (repCnt--) {
+      x++;
+      if (x >= puzzWidth) {
+        x = 0;
+        ++y;
+      }
+    }
+  }
+  // console.log("Puzzle has " + myIslands.length + " islands");
+
+  // console.log("Setting up edges\n");
+  // Set up edge arrays for editable edges
+  myEdges = [];
+  // Create list of edges in the order they are encountered when we loop through islands
+  var n = 0;
+  for (var i in myIslands) {
+    var island = myIslands[i];
+    // !! if there is an island to the right
+    var isleAIdx = getAdjacentIsland(island,1,0);
+    if (isleAIdx != -1) {
+      var edge = newEdge(island.idx,isleAIdx, parseInt(mySolution.substr(n,1)) );
+      island.outbridges.push(myEdges.length);
+      myIslands[isleAIdx].outbridges.push(myEdges.length);
+      myEdges.push(edge);
+      n += 1;
+    }
+    var isleBIdx = getAdjacentIsland(island,0,1);
+    if (isleBIdx != -1) {
+      var edge = newEdge(island.idx,isleBIdx, parseInt(mySolution.substr(n,1)) );
+      island.outbridges.push(myEdges.length);
+      myIslands[isleBIdx].outbridges.push(myEdges.length);
+      myEdges.push(edge);
+      n += 1;
+    }
+  }
+
+  startTime = (new Date()).getTime();
 
   for (var i = 0; i < myEdges.length; ++i) {
     myEdges[i].flag = 0;
     myEdges[i].blocked = false;
   }
+
+  ClearUndoHistory();
+  SetUndoVisualState();
+  myResize();
 
   if ($.cookie('bridge_edges') &&
       $.cookie('bridge_islands') &&
@@ -76,6 +145,12 @@ function initNewPuzzle()
   setTimeout(function(){
     $('#logocontainer').fadeOut('slow');
   },1000);
+
+  if (!window.isPuzzleLoaded) {
+    $(window).resize(myResize);
+    window.isPuzzleLoaded = true;
+  }
+
 }
 
 function addrInPuzzle(addr) { // used to skip invalid cells in loops
@@ -613,7 +688,39 @@ function getEdge(px,py) { // convert pixel coords to nearest edge, if we're near
   }
 }
 
+function gotoNextPuzzleGB (off) {
+  let [vol, book, pn] = [pMatch[2], pMatch[3], pMatch[4]].map(e => parseInt(e))
+  const mp = getMaxPuzzlesPerBook(pMatch[1])
 
+  pn += off
+  if (pn < 1) { book--; pn = mp }
+  if (pn > mp) { book++; pn = 1 }
+  if (book < 1) { vol--; book = 100 }
+  if (book > 100) { vol++; book = 1 }
+  if (vol < 1) { vol = maxVolume }
+  if (vol > maxVolume) { vol = 1 }
+
+  loadPuzzleGB(pMatch[1], vol, book, pn)
+}
+
+function loadPuzzleGB (kind, vol, book, pn) {
+  const url = `http://sites.atomas.com:3000/kind${kind}/vol${vol}/book${book}/puzzle${pn}`
+  fetch(url).then(a => a.json()).then(a => initNewPuzzleGB(a))
+}
+
+function initNewPuzzleGB (puzzle_data) {
+  pMatch = puzzle_data.ptitle.match(/KD_Bridge_(.*)_V(\d*)-B(\d*)-P(\d*)/)
+  pRec = {
+    puzzle_data: puzzle_data,
+    puzzle_id: pMatch[0],
+    success: true,
+    cookie_data: [''],
+    comments: '',
+    creation_date: ''
+  };
+  [gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber] = [puzzle_data.width, puzzle_data.height, pMatch[1], pMatch[2], pMatch[3], pMatch[4]]
+  initNewPuzzle()
+}
 
 $().ready( function() {
   if (!supports_canvas_text()) {
@@ -626,86 +733,7 @@ $().ready( function() {
   if (document.layers) { document.captureEvents(Event.KEYPRESS); }
   $(document).on('keydown',getKey);
 
-// {"puzzle_data": {"passes": 73, "puzz": "3c4c2e2c5a4b3b1a3a3c3b2d1a3a2b1j2b2a2b4d1a4a2b4b2e2a3b3b4a4a2a3g2c1i3c4c3e2a4a3d1d2a1c2a2a2f2a2a3a3b2e4a3d2a3h2b3a4e2a4a2a2f2a3b4a2a1i2b3a4a3b2a2a3b3a1a1b3f2a2b2a1b1e2c2a3a3a2d2b5a5b2d3a2a4a3c4e3b2a3b3a3f4b4a5a3b1a2a3b3a4a3b1i2a2a1b2a4f5a5a1a2e3a3b2h1a2d1a3e1b3a2a4a2f3a3a4c5a4d2d2a2a3e2c1c3i1c1g3a3a3a3b3b3a2e6b6b2a3a3d2b2a4b4j2b2a3a3d4b4c2a2a3b3b3a3c3e4c3c2", "height": 25, "ptitle": "KD_Bridge_25x25_V3-B100-P6", "width": 25}, "puzzle_id": "KD_Bridge_25x25_V3-B100-P6", "success": true, "cookie_data": ["\"Guilt: the gift that keeps on giving.\"", "                                        -- Erma Bombeck"], "comments": "", "creation_date": "2014-12-11 17:13:38"}
-
-  puzzWidth = 7;
-  puzzHeight = 7;
-  puzzMaxCells = 49;
-
-  if ('error' in pRec && !('puzzle_data' in pRec)) {
-    puzzleMessage([pRec.message]);
-  } else {
-    if ('message' in pRec && pRec.message != '') {
-      puzzleMessage([pRec.message]);
-    }
-
-    myPuzzle = pRec['puzzle_data']['puzz'];
-    mySolution = pRec['puzzle_data']['solved']; //list of (0,1, or 2) for each known edge...
-    puzzWidth = parseInt(pRec['puzzle_data']['width']);
-    puzzHeight = parseInt(pRec['puzzle_data']['height']);
-    puzzMaxCells = puzzWidth * puzzHeight;
-    puzzleID = pRec['puzzle_id'];
-
-    gPuzzMarginH = 10;
-    gPuzzMarginV = 10;
-    gCellWidth = (gPuzzleWidth-gPuzzMarginH*2) / puzzWidth;
-    gCellHeight = (gPuzzleWidth-gPuzzMarginV*2) / puzzWidth;
-    gFontHeight = Math.round((20/50)*gCellHeight);
-
-    myIslands = [];
-    var x = 0;
-    var y = 0;
-    for (var i = 0; i < myPuzzle.length; ++i) {
-      var ch = myPuzzle.charCodeAt(i);
-      var repCnt = 0;
-      if (ch >= 48 && ch <= 57) {
-        myIslands.push({'x':x,'y':y,'clue':ch-48,'idx':myIslands.length,'outbridges':[],'islandClass':0});
-        repCnt = 1;
-      } else if (ch >= 97) {
-        repCnt = (ch - 96);
-      }
-      while (repCnt--) {
-        x++;
-        if (x >= puzzWidth) {
-          x = 0;
-          ++y;
-        }
-      }
-    }
-    // console.log("Puzzle has " + myIslands.length + " islands");
-
-    // console.log("Setting up edges\n");
-    // Set up edge arrays for editable edges
-    myEdges = [];
-    // Create list of edges in the order they are encountered when we loop through islands
-    var n = 0;
-    for (var i in myIslands) {
-      var island = myIslands[i];
-      // !! if there is an island to the right
-      var isleAIdx = getAdjacentIsland(island,1,0);
-      if (isleAIdx != -1) {
-        var edge = newEdge(island.idx,isleAIdx, parseInt(mySolution.substr(n,1)) );
-        island.outbridges.push(myEdges.length);
-        myIslands[isleAIdx].outbridges.push(myEdges.length);
-        myEdges.push(edge);
-        n += 1;
-      }
-      var isleBIdx = getAdjacentIsland(island,0,1);
-      if (isleBIdx != -1) {
-        var edge = newEdge(island.idx,isleBIdx, parseInt(mySolution.substr(n,1)) );
-        island.outbridges.push(myEdges.length);
-        myIslands[isleBIdx].outbridges.push(myEdges.length);
-        myEdges.push(edge);
-        n += 1;
-      }
-    }
-
-  }
-
   gCanv = document.getElementById('puzzlecontainer');
-
-  myResize();
-  $(window).resize(myResize);
 
   gCanv.width = gPuzzleWidth;
   gCanv.height = gPuzzleHeight;
@@ -743,9 +771,9 @@ $().ready( function() {
   });
 
   // $('#tool_help').on(touchEvent, provideHint); // pullup for hint, check-answers, clear puzzle, instructions, calculator, setup marks, clear marks, clear all, test
-  $('#tool_left').on(touchEvent, gotoPrevPuzzle); // prev puzzle
+  $('#tool_left').on(touchEvent, e=>gotoNextPuzzleGB(-1)); // prev puzzle
   $('#tool_search').on(touchEvent, launchNavigation); // search/nav dialog
-  $('#tool_right').on(touchEvent, gotoNextPuzzle); // next puzzle
+  $('#tool_right').on(touchEvent, e=>gotoNextPuzzleGB(1)); // next puzzle
   $('#tool_settings').on(touchEvent, launchSettings); // settings dialog
   $('#tool_undo').on(touchEvent, UndoMove); // Undo
   $('#tool_redo').on(touchEvent, RedoMove); // Redo
@@ -755,25 +783,22 @@ $().ready( function() {
   // });
 
   $('.tool-btn').on(touchEvent, function (e) {
-      var tool = $(this).data('tool');
-      gCurrentTool = tool;
-      $('.tool-btn').removeClass('selected');
-      $(this).addClass('selected');
+    var tool = $(this).data('tool');
+    gCurrentTool = tool;
+    $('.tool-btn').removeClass('selected');
+    $(this).addClass('selected');
   });
-
-  ClearUndoHistory();
-  if ($.cookie('bridge_edges') &&
-      $.cookie('bridge_islands') &&
-      $.cookie(currentPuzzleType.toLowerCase() + '_solution_id',{useLocalStorage: false}) == puzzleID) {
-    LoadUndoCookie();
-  }
-  initNewPuzzle();
-  SetUndoVisualState();
 
   $('.dropdown-toggle').dropdown();
 
+  var cook = $.cookie('bridge_solution_id', {useLocalStorage: false})
+  var match = cook.match(/KD_Bridge_(.*)_V(\d*)-B(\d*)-P(\d*)/)
+  if (match) {
+    loadPuzzleGB(match[1], match[2], match[3], match[4])
+  } else {
+    loadPuzzleGB('9x9', 1, 1, 1)
+  }
 
-
-});
+}); // end on domready
 
 

@@ -39,18 +39,6 @@
   var maxVolume = 5;
   var currentPuzzleType = 'Bridge';
   var useSlitherlinkTools = 0;
-  var puzzle_data = {"passes":12,"puzz":"a2d4a33a5a2b1f2b4b3c1b2b3a3b3b1c2b3b2f1b2a3a22a3d2a","height":9,"solved":"2020121121001120110121010011111112","ptitle":"KD_Bridge_9x9_V1-B2-P28","width":9}
-  var pMatch = puzzle_data.ptitle.match(/KD_Bridge_(.*)_V(\d*)-B(\d*)-P(\d*)/);
-  var pRec = {
-    "puzzle_data":puzzle_data,
-    "puzzle_id": pMatch[0],
-    "success": true,
-    "cookie_data": ["1", "2"],
-    "comments": "",
-    "creation_date": ""
-  };
-  var [gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber] = [puzzle_data.width, puzzle_data.height, pMatch[1], pMatch[2], pMatch[3], pMatch[4]]
-
 </script>
 </head>
 <body>
@@ -63,7 +51,7 @@
       <!--<div class="unselectable" id="logocontainer"><img src="../img/krazydad_logo.png" alt="krazydad logo"/></div>-->
       <div class="unselectable" id="titlecontainer">Bridge, 9 x 9, 1-1-1</div>
       <div class="unselectable" id="copycontainer">&copy;2014 krazydad.com</div>
-      <div class="unselectable" id="spinnercontainer"><img src="../img/ajax-loader.gif" alt="Loading"/></div>
+      <div class="unselectable" id="spinnercontainer"><img src="img/ajax-loader.gif" alt="Loading"/></div>
       <div class="unselectable" id="ballooncontainer"></div>
     </div>
 
