@@ -153,7 +153,6 @@ CREATE TABLE IF NOT EXISTS bridges (
         // {passes, puzz, height, solved, ptitle, width}
         this.puzzleSave(match)
         this.puzzleSaved()
-
       }
     }).catch(err => {
       console.error(err)
