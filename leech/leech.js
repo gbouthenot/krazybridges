@@ -60,11 +60,6 @@ CREATE TABLE IF NOT EXISTS bridges (
       }
     }
 
-    ls.nbdone++
-    if (ls.nbdone % 20 === 0) {
-      this.logProgress()
-    }
-
     return true
   }
 
@@ -96,6 +91,14 @@ CREATE TABLE IF NOT EXISTS bridges (
     const changes = this.sqlInsert.run(kind, vol, book, pn, JSON.stringify(data))
     if (changes.changes !== 1) {
       throw new Error('db save error')
+    }
+  }
+
+  puzzleSaved () {
+    const ls = this.leechState
+    ls.nbdone++
+    if (ls.nbdone % 20 === 0) {
+      this.logProgress()
     }
   }
 
@@ -149,6 +152,8 @@ CREATE TABLE IF NOT EXISTS bridges (
         match = match.puzzle_data
         // {passes, puzz, height, solved, ptitle, width}
         this.puzzleSave(match)
+        this.puzzleSaved()
+
       }
     }).catch(err => {
       console.error(err)
