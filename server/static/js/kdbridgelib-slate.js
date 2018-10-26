@@ -771,12 +771,12 @@ $().ready( function() {
   });
 
   // $('#tool_help').on(touchEvent, provideHint); // pullup for hint, check-answers, clear puzzle, instructions, calculator, setup marks, clear marks, clear all, test
-  $('#tool_left').on(touchEvent, e=>gotoNextPuzzleGB(-1)); // prev puzzle
-  $('#tool_search').on(touchEvent, launchNavigation); // search/nav dialog
-  $('#tool_right').on(touchEvent, e=>gotoNextPuzzleGB(1)); // next puzzle
-  $('#tool_settings').on(touchEvent, launchSettings); // settings dialog
-  $('#tool_undo').on(touchEvent, UndoMove); // Undo
-  $('#tool_redo').on(touchEvent, RedoMove); // Redo
+  $('#tool_left').on(touchEvent, e => gotoNextPuzzleGB(-1)) // prev puzzle
+  $('#tool_search').on(touchEvent, launchNavigation) // search/nav dialog
+  $('#tool_right').on(touchEvent, e => gotoNextPuzzleGB(1)) // next puzzle
+  $('#tool_settings').on(touchEvent, launchSettings) // settings dialog
+  $('#tool_undo').on(touchEvent, UndoMove) // Undo
+  $('#tool_redo').on(touchEvent, RedoMove) // Redo
 
   // $('#tool_clear').on(touchEvent, function(e) {
   //   generateKey(' ', 0,false);
@@ -792,7 +792,10 @@ $().ready( function() {
   $('.dropdown-toggle').dropdown();
 
   var cook = $.cookie('bridge_solution_id', {useLocalStorage: false})
-  var match = cook.match(/KD_Bridge_(.*)_V(\d*)-B(\d*)-P(\d*)/)
+  var match
+  if (cook) {
+    match = cook.match(/KD_Bridge_(.*)_V(\d*)-B(\d*)-P(\d*)/)
+  }
   if (match) {
     loadPuzzleGB(match[1], match[2], match[3], match[4])
   } else {
@@ -802,3 +805,10 @@ $().ready( function() {
 }); // end on domready
 
 
+
+function handleSearch() {
+  const [k, v, b, p] = ['#kind', '#volumeNumber', '#bookNumber', '#puzzleNumber'].map(e =>
+    document.querySelector(e).value
+  )
+  loadPuzzleGB(k, v, b, p)
+}
