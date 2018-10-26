@@ -61,15 +61,16 @@ CREATE TABLE IF NOT EXISTS bridges (
         }
       }
     }
-
     return true
   }
 
   logProgress () {
     const ls = this.leechState
-    const percent = Math.floor(ls.nbdone * 10000 / this.totalNumber) / 100
-    console.log(`kind ${this.varieties[ls.variety][0]}, vol ${ls.volume}, book ${ls.book}, puzzle ${ls.number}, ${percent}%`)
+    const pc = Math.floor(ls.nbdone * 10000 / this.totalNumber) / 100
+    const kind = this.varieties[ls.variety][0]
+    console.log(`kind ${kind}, vol ${ls.volume}, book ${ls.book}, puzzle ${ls.number}, ${pc}%`)
   }
+
   /*
    * check if puzzle is already in database
    * @return undefined if row does not exist
@@ -117,33 +118,10 @@ CREATE TABLE IF NOT EXISTS bridges (
     }
   }
 
-  /*
-  leech () {
-    let nbpuz = 0
-    this.varieties.forEach(variety => {
-      const [kind, maxvol, maxbook, maxpn] = variety
-      for (let vol = 1; vol <= maxvol; vol++) {
-        // console.log(`kind ${kind}, vol ${vol} (${maxpn * 100} puzzles), ${nbpuz / 400.0}%`)
-        for (let book = 1; book <= maxbook; book++) {
-          // console.log(`kind ${kind}, vol ${vol}, book ${book} (${maxpn} puzzles), ${nbpuz / 400.0}%`)
-          for (let pn = 1; pn <= maxpn; pn++) {
-            if (nbpuz % 100 === 0) {
-              console.log(`kind ${kind}, vol ${vol}, book ${book}, puzzle ${pn}, ${nbpuz / 400.0}%`)
-            }
-            this.getPuzzle(kind, vol, book, pn)
-            nbpuz++
-          }
-        }
-      }
-    })
-  }
-  */
-
   async getPuzzle () {
     const ls = this.leechState
     const [kind, vol, book, pn] = [this.varieties[ls.variety][0], ls.volume, ls.book, ls.number]
     const url = `https://krazydad.com/tablet/bridges/?kind=${kind}&volumeNumber=${vol}&bookNumber=${book}&puzzleNumber=${pn}`
-    // const url = 'http://127.0.0.1/gbo/krazybridges/sample.html'
     const fetch = require('node-fetch')
 
     const opts = { timeout: 5000, headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
@@ -166,6 +144,3 @@ CREATE TABLE IF NOT EXISTS bridges (
 
 const bridgeLeecher = new BridgeLeecher()
 bridgeLeecher.iterateAuto(20000, 60000)
-
-// bridgeLeecher.nextPuzzle()
-// bridgeLeecher.getPuzzle()
