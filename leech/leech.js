@@ -34,9 +34,11 @@ CREATE TABLE IF NOT EXISTS bridges (
 
     this.sqlGetOne = this.db.prepare('SELECT jsondata FROM bridges WHERE kind=? AND vol=? AND book=? AND number=?')
     this.sqlInsert = this.db.prepare('INSERT INTO bridges VALUES (?, ?, ?, ?, ?)')
-    this.sqlCount = this.db.prepare('SELECT count(*) AS count FROM bridges')
+    this.sqlCount = this.db.prepare('SELECT count(*) AS count FROM bridges WHERE kind=? AND vol<=? AND book<=? AND number<=?')
 
     this.leechState.nbdone = this.puzzleCount()
+    this.totalNumber = this.varieties.reduce((a, b) => a + b.reduce((a, b) => (b > 0) ? a * b : a, 1), 0)
+    console.log(`${this.leechState.nbdone} puzzles already in database; ${this.totalNumber} total puzzles`)
     this.logProgress()
   }
 
@@ -65,7 +67,8 @@ CREATE TABLE IF NOT EXISTS bridges (
 
   logProgress () {
     const ls = this.leechState
-    console.log(`kind ${this.varieties[ls.variety][0]}, vol ${ls.volume}, book ${ls.book}, puzzle ${ls.number}, ${ls.nbdone / 400.0}%`)
+    const percent = Math.floor(ls.nbdone * 10000 / this.totalNumber) / 100
+    console.log(`kind ${this.varieties[ls.variety][0]}, vol ${ls.volume}, book ${ls.book}, puzzle ${ls.number}, ${percent}%`)
   }
   /*
    * check if puzzle is already in database
@@ -78,11 +81,12 @@ CREATE TABLE IF NOT EXISTS bridges (
   }
 
   /**
+    * number of puzzles already in database (as described by varieties)
+    * sum of every kind, limited by vol, book and puzzle numbers
     * @return int number of puzzles in db
     */
   puzzleCount () {
-    const ret = this.sqlCount.get()
-    return parseInt(ret['count'])
+    return this.varieties.reduce((a, v) => a + this.sqlCount.get(v[0], v[1], v[2], v[3]).count, 0)
   }
 
   puzzleSave (data) {
