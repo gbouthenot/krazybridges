@@ -71,8 +71,12 @@ function provideHint()
 }
 
 function myResize(e) {
-  var maxPuzzleHeight = Math.min(window.innerWidth-50,window.innerHeight - (128 + (useSlitherlinkTools? 48 : 0)));
-  var maxPuzzleWidth = window.innerWidth - 56;
+  // GB var maxPuzzleHeight = Math.min(window.innerWidth-50,window.innerHeight - (128 + (useSlitherlinkTools? 48 : 0)));
+  //var maxPuzzleHeight = Math.min(window.innerHeight-50,window.innerHeight - (128 + (useSlitherlinkTools? 48 : 0)));
+  //var maxPuzzleWidth = window.innerWidth - 56;
+  var maxPuzzleHeight = window.innerHeight-50;
+  var maxPuzzleWidth = window.innerWidth;
+
   if (gGridWidth/gGridHeight > maxPuzzleWidth/maxPuzzleHeight) {
     // scale by max-width
     gPuzzleWidth = Math.max(200,maxPuzzleWidth);
