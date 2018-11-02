@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
+const path = require('path')
+
 // Require the framework and instantiate it
 const fastify = require('fastify')({
   logger: true
 })
 
 // main route
-fastify.get('/kind:kind/vol:vol/book:book/puzzle:puzzle', (request, reply) => {
+fastify.get('/api/bridges/:kind/:vol/:book/:puzzle.json', (request, reply) => {
   const rp = request.params
 
   const SQLITE = require('better-sqlite3')
@@ -38,8 +40,14 @@ fastify.setNotFoundHandler((request, reply) => {
   reply.code(404).type('text/html').send('Not Found')
 })
 
+// Static route
+fastify.register(require('fastify-static'), {
+  root: path.join(__dirname, 'static'),
+  prefix: '/'
+})
+
 // Run the server!
-fastify.listen(3000, '0.0.0.0', (err, address) => {
+fastify.listen(process.env.PORT || 3000, process.env.IP || '127.0.0.1', (err, address) => {
   if (err) throw err
   fastify.log.info(`server listening on ${address}`)
 })

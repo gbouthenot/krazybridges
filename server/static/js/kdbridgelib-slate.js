@@ -1,6 +1,6 @@
 /* eslint-env browser, jquery */
 /* eslint-disable camelcase, no-global-assign */
-/* global pMatch, maxVolume, pRec, gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber */
+/* global pMatch, maxVolume, pRec, URLAPI, gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber */
 
 var puzzleType = 'Bridge';
 
@@ -704,7 +704,7 @@ function gotoNextPuzzleGB (off) {
 }
 
 function loadPuzzleGB (kind, vol, book, pn) {
-  const url = `http://sites.atomas.com:3000/kind${kind}/vol${vol}/book${book}/puzzle${pn}`
+  const url = `${URLAPI}/api/bridges/${kind}/${vol}/${book}/${pn}.json`
   fetch(url).then(a => a.json()).then(a => initNewPuzzleGB(a))
 }
 
