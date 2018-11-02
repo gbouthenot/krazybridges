@@ -704,7 +704,7 @@ function gotoNextPuzzleGB (off) {
 }
 
 function loadPuzzleGB (kind, vol, book, pn) {
-  const url = `${URLAPI}/api/bridges/${kind}/${vol}/${book}/${pn}.json`
+  const url = `${URLAPI}/api/bridges/${kind}/${vol}/${book}/${pn}`
   fetch(url).then(a => a.json()).then(a => initNewPuzzleGB(a))
 }
 

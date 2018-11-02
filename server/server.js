@@ -8,7 +8,7 @@ const fastify = require('fastify')({
 })
 
 // main route
-fastify.get('/api/bridges/:kind/:vol/:book/:puzzle.json', (request, reply) => {
+fastify.get('/api/bridges/:kind/:vol/:book/:puzzle', (request, reply) => {
   const rp = request.params
 
   const SQLITE = require('better-sqlite3')
