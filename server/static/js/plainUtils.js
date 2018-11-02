@@ -1,5 +1,5 @@
 // loopUtils.js - for Slitherlink Variants, Bridges and Galaxies
-function generateKey(keyString, keyCode, domark) 
+function generateKey(keyString, keyCode, domark)
 {
   if (keyCode == 192)
       keyString = '~';
@@ -35,9 +35,9 @@ function simulateDblClickTouchEvent(oo) {
     $d( ot.__taps );
     if( !ot.__tabstm ) /* don't start it twice */  {
       ot.__tabstm = setTimeout( function() {
-      if( ot.__taps >= 2 ) {  
+      if( ot.__taps >= 2 ) {
         ot.__taps = 0;
-        $(ot).trigger('dblclick'); 
+        $(ot).trigger('dblclick');
       }
       ot.__tabstm = 0;
       ot.__taps = 0;
@@ -74,7 +74,7 @@ function myResize(e) {
   // GB var maxPuzzleHeight = Math.min(window.innerWidth-50,window.innerHeight - (128 + (useSlitherlinkTools? 48 : 0)));
   //var maxPuzzleHeight = Math.min(window.innerHeight-50,window.innerHeight - (128 + (useSlitherlinkTools? 48 : 0)));
   //var maxPuzzleWidth = window.innerWidth - 56;
-  var maxPuzzleHeight = window.innerHeight-50;
+  var maxPuzzleHeight = window.innerHeight-128;
   var maxPuzzleWidth = window.innerWidth;
 
   if (gGridWidth/gGridHeight > maxPuzzleWidth/maxPuzzleHeight) {
