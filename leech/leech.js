@@ -4,11 +4,11 @@
 class BridgeLeecher {
   constructor () {
     this.varieties = [
-      [ '9x9', 5, 100, 32 ],   //     0 -> 16000
-      [ '12x14', 5, 100, 16 ], // 16000 -> 24000
-      [ '22x14', 5, 100, 16 ], // 24000 -> 32000
-      [ '20x25', 5, 100, 8 ],  // 32000 -> 36000
-      [ '25x25', 5, 100, 8 ]   // 36000 -> 40000
+      [ '9x9', 5, 100, 32 ],   // 32      0 + 16000 -> 16000
+      [ '12x14', 5, 100, 16 ], // 16  16000 +  8000 -> 24000
+      [ '22x14', 5, 100, 16 ], // 16  24000 +  8000 -> 32000
+      [ '20x25', 5, 100, 8 ],  //  8  32000 +  4000 -> 36000
+      [ '25x25', 5, 100, 8 ]   //  8  36000 +  4000 -> 40000
     ]
 
     this.leechState = {
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS bridges (
     this.sqlCount = this.db.prepare('SELECT count(*) AS count FROM bridges WHERE kind=? AND vol<=? AND book<=? AND number<=?')
 
     this.leechState.nbdone = this.puzzleCount()
-    this.totalNumber = this.varieties.reduce((a, b) => a + b.reduce((a, b) => (b > 0) ? a * b : a, 1), 0)
+    this.totalNumber = this.varieties.reduce((a, b) => a + b.reduce((a, b) => (b >= 0) ? a * b : a, 1), 0)
     console.log(`${this.leechState.nbdone} puzzles already in database; ${this.totalNumber} total puzzles`)
     this.logProgress()
   }
