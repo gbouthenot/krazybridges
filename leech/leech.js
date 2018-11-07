@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS bridges (
         await this.getPuzzle()
         setTimeout(this.iterateAuto.bind(this, mintime, multime), mintime + Math.random() * multime)
       } else {
-        this.iterateAuto(mintime, multime)
+        setTimeout(this.iterateAuto.bind(this, mintime, multime), 0)
       }
     }
   }
