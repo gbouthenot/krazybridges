@@ -107,14 +107,16 @@ CREATE TABLE IF NOT EXISTS bridges (
     }
   }
 
+  /**
+   * Look for the next puzzle to get, that has not been already got
+   * If it exists, download it and set a timeout for a new iteration
+   */
   async iterateAuto (mintime, multime) {
-    if (this.nextPuzzle()) {
-      if (!this.puzzleExists()) {
-        await this.getPuzzle()
-        setTimeout(_ => this.iterateAuto(mintime, multime), mintime + Math.random() * multime)
-      } else {
-        setTimeout(_ => this.iterateAuto( mintime, multime), 0)
-      }
+    let nextExist
+    while ((nextExist = this.nextPuzzle()) && this.puzzleExists()) { }
+    if (nextExist) {
+      await this.getPuzzle()
+      setTimeout(_ => this.iterateAuto(mintime, multime), mintime + Math.random() * multime)
     }
   }
 
