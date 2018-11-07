@@ -111,9 +111,9 @@ CREATE TABLE IF NOT EXISTS bridges (
     if (this.nextPuzzle()) {
       if (!this.puzzleExists()) {
         await this.getPuzzle()
-        setTimeout(this.iterateAuto.bind(this, mintime, multime), mintime + Math.random() * multime)
+        setTimeout(_ => this.iterateAuto(mintime, multime), mintime + Math.random() * multime)
       } else {
-        setTimeout(this.iterateAuto.bind(this, mintime, multime), 0)
+        setTimeout(_ => this.iterateAuto( mintime, multime), 0)
       }
     }
   }
