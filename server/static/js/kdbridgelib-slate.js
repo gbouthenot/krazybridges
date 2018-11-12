@@ -1,6 +1,6 @@
 /* eslint-env browser, jquery */
 /* eslint-disable camelcase, no-global-assign */
-/* global pMatch, maxVolume, pRec, URLAPI, gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber */
+/* global pMatch, maxVolume, pRec, URLAPI, puzzleMessage, gGridWidth, gGridHeight, pkind, volumeNumber, bookNumber, puzzleNumber */
 
 var puzzleType = 'Bridge';
 
@@ -704,8 +704,20 @@ function gotoNextPuzzleGB (off) {
 }
 
 function loadPuzzleGB (kind, vol, book, pn) {
+  console.log(kind, vol, book, pn)
   const url = `${URLAPI}/api/bridges/${kind}/${vol}/${book}/${pn}`
-  fetch(url).then(a => a.json()).then(a => initNewPuzzleGB(a))
+  Promise.race([
+    fetch(url),
+    new Promise((resolve, reject) => setTimeout(_ => reject(new Error('Timeout')), 30))
+  ])
+    .then((resp) => {
+      if (resp.ok) {
+        return resp.json()
+      } else {
+        throw new Error(`got response status ${resp.status}`)
+      }
+    }).then(a => initNewPuzzleGB(a))
+    .catch(err => puzzleMessage(['fetch puzzle', err.toString()]))
 }
 
 function initNewPuzzleGB (puzzle_data) {
