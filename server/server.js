@@ -9,6 +9,7 @@ const fastify = require('fastify')({
 
 // main route
 fastify.get('/api/bridges/:kind/:vol/:book/:puzzle', (request, reply) => {
+  reply.header('Access-Control-Allow-Origin', '*')
   const rp = request.params
 
   const SQLITE = require('better-sqlite3')
@@ -23,7 +24,6 @@ fastify.get('/api/bridges/:kind/:vol/:book/:puzzle', (request, reply) => {
 
   if (ret) {
     ret = JSON.parse(ret.jsondata)
-    reply.header('Access-Control-Allow-Origin', '*')
     reply.send(ret)
   } else {
     reply.status(404).send('Puzzle not found')
@@ -32,11 +32,13 @@ fastify.get('/api/bridges/:kind/:vol/:book/:puzzle', (request, reply) => {
 
 // Index route
 fastify.get('/', (request, reply) => {
+  reply.header('Access-Control-Allow-Origin', '*')
   reply.send({ hello: 'world' })
 })
 
 // "Not Found" route
 fastify.setNotFoundHandler((request, reply) => {
+  reply.header('Access-Control-Allow-Origin', '*')
   reply.code(404).type('text/html').send('Not Found')
 })
 
