@@ -1,15 +1,26 @@
 #!/usr/bin/env node
 
 /* eslint no-multi-spaces: ["error", { ignoreEOLComments: true }] */
-class BridgeLeecher {
-  constructor () {
-    this.varieties = [
-      [ '9x9', 5, 100, 32 ],   // 32      0 + 16000 -> 16000
-      [ '12x14', 5, 100, 16 ], // 16  16000 +  8000 -> 24000
-      [ '22x14', 5, 100, 16 ], // 16  24000 +  8000 -> 32000
-      [ '20x25', 5, 100, 8 ],  //  8  32000 +  4000 -> 36000
-      [ '25x25', 5, 100, 8 ]   //  8  36000 +  4000 -> 40000
-    ]
+class PuzzleLeecher {
+  constructor (ptype) {
+    this.varieties = ({
+      bridges: [
+        [ '9x9', 5, 100, 32 ],   // 32      0 + 16000 -> 16000
+        [ '12x14', 5, 100, 16 ], // 16  16000 +  8000 -> 24000
+        [ '22x14', 5, 100, 16 ], // 16  24000 +  8000 -> 32000
+        [ '20x25', 5, 100, 8 ],  //  8  32000 +  4000 -> 36000
+        [ '25x25', 5, 100, 8 ]   //  8  36000 +  4000 -> 40000
+      ],
+      suguru: [
+        [ '6x6', 5, 100, 16 ],   // 16      0 + 8000 ->  8000
+        [ '8x8', 5, 100, 16 ],   // 16   8000 + 8000 -> 16000
+        [ '12x10', 5, 100, 8 ],  // 16  16000 + 4000 -> 20000
+        [ '15x10', 5, 100, 8 ],  //  8  20000 + 4000 -> 24000
+        [ '15x10n6', 5, 100, 8 ] //  8  24000 + 4000 -> 28000
+      ]
+    })[ptype]
+
+    this.ptype = ptype
 
     this.leechState = {
       variety: 0,
@@ -20,9 +31,9 @@ class BridgeLeecher {
     }
 
     const SQLITE = require('better-sqlite3')
-    this.db = new SQLITE('bridges.db')
+    this.db = new SQLITE('puzzles.db')
     const schema = `
-CREATE TABLE IF NOT EXISTS bridges (
+CREATE TABLE IF NOT EXISTS ${ptype} (
   kind TEXT,
   vol INT,
   book INT,
@@ -32,9 +43,9 @@ CREATE TABLE IF NOT EXISTS bridges (
 )`
     this.db.exec(schema)
 
-    this.sqlGetOne = this.db.prepare('SELECT jsondata FROM bridges WHERE kind=? AND vol=? AND book=? AND number=?')
-    this.sqlInsert = this.db.prepare('INSERT INTO bridges VALUES (?, ?, ?, ?, ?)')
-    this.sqlCount = this.db.prepare('SELECT count(*) AS count FROM bridges WHERE kind=? AND vol<=? AND book<=? AND number<=?')
+    this.sqlGetOne = this.db.prepare(`SELECT jsondata FROM ${ptype} WHERE kind=? AND vol=? AND book=? AND number=?`)
+    this.sqlInsert = this.db.prepare(`INSERT INTO ${ptype} VALUES (?, ?, ?, ?, ?)`)
+    this.sqlCount = this.db.prepare(`SELECT count(*) AS count FROM ${ptype} WHERE kind=? AND vol<=? AND book<=? AND number<=?`)
 
     this.leechState.nbdone = this.puzzleCount()
     this.totalNumber = this.varieties.reduce((a, b) => a + b.reduce((a, b) => (b >= 0) ? a * b : a, 1), 0)
@@ -123,7 +134,7 @@ CREATE TABLE IF NOT EXISTS bridges (
   async getPuzzle () {
     const ls = this.leechState
     const [kind, vol, book, pn] = [this.varieties[ls.variety][0], ls.volume, ls.book, ls.number]
-    const url = `https://krazydad.com/tablet/bridges/?kind=${kind}&volumeNumber=${vol}&bookNumber=${book}&puzzleNumber=${pn}`
+    const url = `https://krazydad.com/tablet/${this.ptype}/?kind=${kind}&volumeNumber=${vol}&bookNumber=${book}&puzzleNumber=${pn}`
     const fetch = require('node-fetch')
 
     const opts = { timeout: 5000, headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
@@ -144,5 +155,10 @@ CREATE TABLE IF NOT EXISTS bridges (
   }
 }
 
-const bridgeLeecher = new BridgeLeecher()
-bridgeLeecher.iterateAuto(20000, 60000)
+if (!process.argv[2]) {
+  console.error(`syntax: ${process.argv0} ${process.argv[1]} bridges|suguru`)
+  process.exit(1)
+}
+
+const puzzleLeecher = new PuzzleLeecher(process.argv[2])
+puzzleLeecher.iterateAuto(20000, 60000)

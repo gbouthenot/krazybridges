@@ -28,7 +28,7 @@ fastify.get('/api/bridges/:kind/:vol/:book/:puzzle', (request, reply) => {
   const rp = request.params
 
   const SQLITE = require('better-sqlite3')
-  const db = new SQLITE('../leech/bridges.db')
+  const db = new SQLITE('../leech/puzzles.db')
   let ret
   try {
     const stmt = db.prepare('SELECT jsondata FROM bridges WHERE kind=? AND vol=? AND book=? AND number=?')
