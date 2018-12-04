@@ -141,7 +141,6 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
     console.log(url)
     await fetch(url, opts).then(res => res.text()).then(body => {
       let match = body.replace(/\n/g, '').match(/ {2}var pRec = +(\{.*?\});/m)
-      console.log('match', match[1])
       if (match && match[1]) {
         match = match[1]
         match = JSON.parse(match)
