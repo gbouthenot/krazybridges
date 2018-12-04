@@ -140,14 +140,19 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
     const opts = { timeout: 5000, headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
     console.log(url)
     await fetch(url, opts).then(res => res.text()).then(body => {
-      let match = body.match(/^ {2}var pRec = (\{.*\});/m)
+      let match = body.replace(/\n/g, '').match(/ {2}var pRec = +(\{.*?\});/m)
+      console.log('match', match[1])
       if (match && match[1]) {
         match = match[1]
         match = JSON.parse(match)
-        match = match.puzzle_data
-        // {passes, puzz, height, solved, ptitle, width}
-        this.puzzleSave(match)
-        this.puzzleSaved()
+        if (match.message) {
+          console.log(`message:${match.message}`)
+        } else {
+          match = match.puzzle_data
+          // {passes, puzz, height, solved, ptitle, width}
+          this.puzzleSave(match)
+          this.puzzleSaved()
+        }
       }
     }).catch(err => {
       console.error(err)
