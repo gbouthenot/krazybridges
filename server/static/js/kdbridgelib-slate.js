@@ -705,7 +705,7 @@ function gotoNextPuzzleGB (off) {
 
 function loadPuzzleGB (kind, vol, book, pn) {
   console.log(kind, vol, book, pn)
-  const url = `${URLAPI}/api/bridges/${kind}/${vol}/${book}/${pn}`
+  const url = `${URLAPI}api/bridges/${kind}/${vol}/${book}/${pn}`
   Promise.race([
     fetch(url),
     new Promise((resolve, reject) => setTimeout(_ => reject(new Error('Timeout')), 12000))
