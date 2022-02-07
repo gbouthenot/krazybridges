@@ -14,7 +14,7 @@ class PuzzleLeecher {
       suguru: [
         [ '6x6', 5, 100, 16 ],   // 16      0 + 8000 ->  8000
         [ '8x8', 5, 100, 16 ],   // 16   8000 + 8000 -> 16000
-        [ '12x10', 5, 100, 8 ],  // 16  16000 + 4000 -> 20000
+        [ '12x10', 5, 100, 8 ],  //  8  16000 + 4000 -> 20000
         [ '15x10', 5, 100, 8 ],  //  8  20000 + 4000 -> 24000
         [ '15x10n6', 5, 100, 8 ] //  8  24000 + 4000 -> 28000
       ]
@@ -59,20 +59,25 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
    */
   nextPuzzle () {
     const ls = this.leechState
-    let variety = this.varieties[ls.variety]
-    if (++ls.number > variety[3]) {
-      ls.number = 1
-      if (++ls.book > variety[2]) {
-        ls.book = 1
-        if (++ls.volume > variety[1]) {
-          ls.volume = 1
-          if (++ls.variety > variety.length) {
-            return false
+    const found = false
+    while (true) {
+      let variety = this.varieties[ls.variety]
+      if (++ls.number > variety[3]) {
+        ls.number = 1
+        if (++ls.book > variety[2]) {
+          ls.book = 1
+          if (++ls.volume > variety[1]) {
+            ls.volume = 1
+            if (++ls.variety > variety.length) {
+              return false
+            }
           }
         }
       }
+      if (!(this.ptype === 'suguru' && this.varieties[ls.variety][0] === '15x10' && ls.volume === 1 && ls.book >= 72)) {
+        return true;
+      }
     }
-    return true
   }
 
   logProgress () {
