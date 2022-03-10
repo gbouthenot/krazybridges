@@ -140,9 +140,10 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
     const ls = this.leechState
     const [kind, vol, book, pn] = [this.varieties[ls.variety][0], ls.volume, ls.book, ls.number]
     const url = `https://krazydad.com/tablet/${this.ptype}/?kind=${kind}&volumeNumber=${vol}&bookNumber=${book}&puzzleNumber=${pn}`
-    const fetch = require('node-fetch')
+    const timeoutSignal = require('timeout-signal')
+    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
 
-    const opts = { timeout: 5000, headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
+    const opts = { signal: timeoutSignal(5000), headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
     console.log(url)
     await fetch(url, opts).then(res => res.text()).then(body => {
       let match = body.replace(/\n/g, '').match(/ {2}var pRec = +(\{.*?\});/m)
