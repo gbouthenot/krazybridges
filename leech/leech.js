@@ -5,18 +5,18 @@ class PuzzleLeecher {
   constructor (ptype) {
     this.varieties = ({
       bridges: [
-        [ '9x9', 5, 100, 32 ],   // 32      0 + 16000 -> 16000
-        [ '12x14', 5, 100, 16 ], // 16  16000 +  8000 -> 24000
-        [ '22x14', 5, 100, 16 ], // 16  24000 +  8000 -> 32000
-        [ '20x25', 5, 100, 8 ],  //  8  32000 +  4000 -> 36000
-        [ '25x25', 5, 100, 8 ]   //  8  36000 +  4000 -> 40000
+        ['9x9', 5, 100, 32],   // 32      0 + 16000 -> 16000
+        ['12x14', 5, 100, 16], // 16  16000 +  8000 -> 24000
+        ['22x14', 5, 100, 16], // 16  24000 +  8000 -> 32000
+        ['20x25', 5, 100, 8],  //  8  32000 +  4000 -> 36000
+        ['25x25', 5, 100, 8]   //  8  36000 +  4000 -> 40000
       ],
       suguru: [
-        [ '6x6', 5, 100, 16 ],   // 16      0 + 8000 ->  8000
-        [ '8x8', 5, 100, 16 ],   // 16   8000 + 8000 -> 16000
-        [ '12x10', 5, 100, 8 ],  //  8  16000 + 4000 -> 20000
-        [ '15x10', 5, 100, 8 ],  //  8  20000 + 4000 -> 24000
-        [ '15x10n6', 5, 100, 8 ] //  8  24000 + 4000 -> 28000
+        ['6x6', 5, 100, 16],   // 16      0 + 8000 ->  8000
+        ['8x8', 5, 100, 16],   // 16   8000 + 8000 -> 16000
+        ['12x10', 5, 100, 8],  //  8  16000 + 4000 -> 20000
+        ['15x10', 5, 100, 8],  //  8  20000 + 4000 -> 24000
+        ['15x10n6', 5, 100, 8] //  8  24000 + 4000 -> 28000
       ]
     })[ptype]
 
@@ -59,9 +59,8 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
    */
   nextPuzzle () {
     const ls = this.leechState
-    const found = false
     while (true) {
-      let variety = this.varieties[ls.variety]
+      const variety = this.varieties[ls.variety]
       if (++ls.number > variety[3]) {
         ls.number = 1
         if (++ls.book > variety[2]) {
@@ -75,7 +74,7 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
         }
       }
       if (!(this.ptype === 'suguru' && this.varieties[ls.variety][0] === '15x10' && ls.volume === 1 && ls.book >= 72)) {
-        return true;
+        return true
       }
     }
   }
@@ -129,7 +128,7 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
    */
   async iterateAuto (mintime, multime) {
     let nextExist
-    while ((nextExist = this.nextPuzzle()) && this.puzzleExists()) { }
+    while ((nextExist = this.nextPuzzle()) && this.puzzleExists()) { } // eslint-disable-line no-empty
     if (nextExist) {
       await this.getPuzzle()
       setTimeout(_ => this.iterateAuto(mintime, multime), mintime + Math.random() * multime)
@@ -141,7 +140,7 @@ CREATE TABLE IF NOT EXISTS ${ptype} (
     const [kind, vol, book, pn] = [this.varieties[ls.variety][0], ls.volume, ls.book, ls.number]
     const url = `https://krazydad.com/tablet/${this.ptype}/?kind=${kind}&volumeNumber=${vol}&bookNumber=${book}&puzzleNumber=${pn}`
     const timeoutSignal = require('timeout-signal')
-    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
+    const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
 
     const opts = { signal: timeoutSignal(5000), headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36' } }
     console.log(url)
