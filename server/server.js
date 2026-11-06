@@ -56,13 +56,13 @@ fastify.setNotFoundHandler((request, reply) => {
 })
 
 // Static route
-fastify.register(require('fastify-static'), {
+fastify.register(require('@fastify/static'), {
   root: path.join(__dirname, 'static'),
   prefix: '/'
 })
 
 // Run the server!
-fastify.listen(process.env.PORT || 3000, process.env.IP || '127.0.0.1', (err, address) => {
+fastify.listen({ port: process.env.PORT || 3000, host: process.env.IP || '127.0.0.1' }, (err, address) => {
   if (err) throw err
   fastify.log.info(`server listening on ${address}`)
 })
